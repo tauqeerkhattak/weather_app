@@ -1,78 +1,130 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_weather_bg_null_safety/bg/weather_bg.dart';
-import 'package:flutter_weather_bg_null_safety/utils/weather_type.dart';
+import 'package:weather_app/Forecast/forecast.dart';
 import 'package:weather_app/data.dart';
 
 class CityWeather extends StatefulWidget {
   final String cityName;
+  final weatherJSON;
 
-  CityWeather({required this.cityName});
+  CityWeather({required this.cityName, required this.weatherJSON});
 
   @override
-  _CityWeatherState createState() => _CityWeatherState(cityName: cityName);
+  _CityWeatherState createState() =>
+      _CityWeatherState(cityName: cityName, weatherJSON: weatherJSON);
 }
 
 class _CityWeatherState extends State<CityWeather> {
   final String cityName;
-  var weatherType;
+  final weatherJSON;
 
-  _CityWeatherState({required this.cityName});
+  _CityWeatherState({required this.cityName, required this.weatherJSON});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(cityName),
-        centerTitle: true,
-        backgroundColor: Data.primaryColor,
-      ),
       body: SafeArea(
         child: Stack(
           children: [
             WeatherBg(
-              weatherType: WeatherType.sunnyNight,
+              weatherType:
+                  Data.getWeatherType(weatherJSON['current']['weather'][0]['icon']),
               width: MediaQuery.of(context).size.width,
               height: MediaQuery.of(context).size.height,
             ),
-            FutureBuilder(
-              future: Data.getWeatherData(
-                url:
-                    'https://api.openweathermap.org/data/2.5/weather?q=$cityName&units=metric&appid=1aca8b01724808e81031434cd1341c65',
+            Container(
+              width: MediaQuery.of(context).size.width,
+              height: MediaQuery.of(context).size.height,
+              child: Column(
+                children: [
+                  Expanded(
+                    flex: 1,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
+                          children: [
+                            IconButton(
+                              icon: Icon(
+                                Icons.arrow_back,
+                                size: 30,
+                                color: Data.temperatureColor,
+                              ),
+                              onPressed: () {
+                                Navigator.pop(context);
+                              },
+                            ),
+                            Center(
+                              child: Container(
+                                margin: EdgeInsets.only(right: 10.0),
+                                child: Text(
+                                  cityName,
+                                  style: TextStyle(
+                                    color: Data.temperatureColor,
+                                    fontSize: 29,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        Text(
+                          'Feels like ${Data.roundOff(weatherJSON['current']['feels_like'])}\u00B0',
+                          style: TextStyle(
+                            color: Data.temperatureColor,
+                            fontSize: 29,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Expanded(
+                    flex: 7,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      // crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Text(
+                          '${Data.roundOff(weatherJSON['current']['temp'])}\u00B0',
+                          style: TextStyle(
+                            color: Data.temperatureColor,
+                            fontSize: 100,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        Text(
+                          weatherJSON['current']['weather'][0]['main'],
+                          style: TextStyle(
+                            color: Data.temperatureColor,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 40,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Expanded(
+                    flex: 3,
+                    child: Container(
+                      width: MediaQuery.of(context).size.width,
+                      child: ListView(
+                        // mainAxisAlignment: MainAxisAlignment.start,
+                        scrollDirection: Axis.horizontal,
+                        children: [
+                          Forecast(
+                            epoch: weatherJSON['daily'][1]['dt'],
+                            icon: weatherJSON['daily'][1]['weather'][0]['icon'],
+                            temp: weatherJSON['daily'][1]['temp']['day'],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
               ),
-              builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
-                if (snapshot.hasData) {
-                  double temperature = snapshot.data['main']['temp'];
-                  final mainWeather = snapshot.data['weather'][0];
-                  String description = mainWeather['description'];
-                  return Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      Text(
-                        temperature.toString(),
-                        style: TextStyle(
-                          color: Data.temperatureColor,
-                          fontSize: 70,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      Text(
-                        description.toString(),
-                        style: TextStyle(
-                          color: Data.temperatureColor,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 50,
-                        ),
-                      ),
-                    ],
-                  );
-                } else {
-                  return Center(
-                    child: CircularProgressIndicator(),
-                  );
-                }
-              },
             ),
           ],
         ),
