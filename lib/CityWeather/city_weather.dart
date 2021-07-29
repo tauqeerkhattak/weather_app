@@ -1,7 +1,7 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_weather_bg_null_safety/bg/weather_bg.dart';
-import 'package:weather_app/Forecast/forecast.dart';
 import 'package:weather_app/data.dart';
 
 class CityWeather extends StatefulWidget {
@@ -19,6 +19,36 @@ class _CityWeatherState extends State<CityWeather> {
   final String cityName;
   final weatherJSON;
 
+  String temperature = '',
+      description = '',
+      feelsLike = '',
+      currentWeatherIcon = '';
+  int currentEpoch = 0, humidity = 0;
+  double currentWindSpeed = 0;
+  List<Color> forecastColors = [
+    Data.primaryColor,
+    Data.forecastBackgroundColor,
+    Data.forecastBackgroundColor,
+    Data.forecastBackgroundColor,
+    Data.forecastBackgroundColor,
+    Data.forecastBackgroundColor,
+    Data.forecastBackgroundColor,
+    Data.forecastBackgroundColor,
+  ];
+
+  initState() {
+    temperature =
+        Data.roundOff(double.parse(weatherJSON['current']['temp'].toString()));
+    feelsLike = Data.roundOff(
+        double.parse((weatherJSON['current']['feels_like']).toString()));
+    description = weatherJSON['current']['weather'][0]['main'];
+    currentEpoch = weatherJSON['current']['dt'];
+    currentWeatherIcon = weatherJSON['current']['weather'][0]['icon'];
+    currentWindSpeed = weatherJSON['current']['wind_speed'];
+    humidity = weatherJSON['current']['humidity'];
+    super.initState();
+  }
+
   _CityWeatherState({required this.cityName, required this.weatherJSON});
 
   @override
@@ -28,8 +58,7 @@ class _CityWeatherState extends State<CityWeather> {
         child: Stack(
           children: [
             WeatherBg(
-              weatherType:
-                  Data.getWeatherType(weatherJSON['current']['weather'][0]['icon']),
+              weatherType: Data.getWeatherType(currentWeatherIcon),
               width: MediaQuery.of(context).size.width,
               height: MediaQuery.of(context).size.height,
             ),
@@ -45,15 +74,13 @@ class _CityWeatherState extends State<CityWeather> {
                       children: [
                         Row(
                           children: [
-                            IconButton(
-                              icon: Icon(
-                                Icons.arrow_back,
+                            Container(
+                              margin: EdgeInsets.only(left: 5, right: 10),
+                              child: Icon(
+                                Icons.location_on,
                                 size: 30,
-                                color: Data.temperatureColor,
+                                color: Data.primaryColor,
                               ),
-                              onPressed: () {
-                                Navigator.pop(context);
-                              },
                             ),
                             Center(
                               child: Container(
@@ -61,8 +88,8 @@ class _CityWeatherState extends State<CityWeather> {
                                 child: Text(
                                   cityName,
                                   style: TextStyle(
-                                    color: Data.temperatureColor,
-                                    fontSize: 29,
+                                    color: Data.secondaryColor,
+                                    fontSize: 22,
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
@@ -71,10 +98,10 @@ class _CityWeatherState extends State<CityWeather> {
                           ],
                         ),
                         Text(
-                          'Feels like ${Data.roundOff(weatherJSON['current']['feels_like'])}\u00B0',
+                          'Feels like $feelsLike\u00B0',
                           style: TextStyle(
-                            color: Data.temperatureColor,
-                            fontSize: 29,
+                            color: Data.secondaryColor,
+                            fontSize: 22,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -85,41 +112,975 @@ class _CityWeatherState extends State<CityWeather> {
                     flex: 7,
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
-                      // crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        Text(
-                          '${Data.roundOff(weatherJSON['current']['temp'])}\u00B0',
-                          style: TextStyle(
-                            color: Data.temperatureColor,
-                            fontSize: 100,
-                            fontWeight: FontWeight.bold,
+                        Container(
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Container(
+                                child: Row(
+                                  children: [
+                                    Container(
+                                      margin: EdgeInsets.only(right: 10),
+                                      child: Icon(
+                                        CupertinoIcons.wind,
+                                        color: Data.primaryColor,
+                                        size: 30,
+                                      ),
+                                    ),
+                                    Text(
+                                      currentWindSpeed.toString() + ' m/s',
+                                      style: TextStyle(
+                                        color: Data.secondaryColor,
+                                        fontSize: 22,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Container(
+                                margin: EdgeInsets.only(left: 15),
+                                child: Row(
+                                  children: [
+                                    Container(
+                                      margin: EdgeInsets.only(right: 10),
+                                      child: Icon(
+                                        CupertinoIcons.drop_fill,
+                                        color: Data.primaryColor,
+                                        size: 30,
+                                      ),
+                                    ),
+                                    Text(
+                                      humidity.toString() + ' %',
+                                      style: TextStyle(
+                                        color: Data.secondaryColor,
+                                        fontSize: 22,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                        Text(
-                          weatherJSON['current']['weather'][0]['main'],
-                          style: TextStyle(
-                            color: Data.temperatureColor,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 40,
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              '$temperature',
+                              style: TextStyle(
+                                color: Data.secondaryColor,
+                                fontSize: 100,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            Text(
+                              '\u00B0',
+                              style: TextStyle(
+                                color: Data.primaryColor,
+                                fontSize: 100,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              'Weather: ',
+                              style: TextStyle(
+                                color: Data.primaryColor,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 22,
+                              ),
+                            ),
+                            Text(
+                              description[0].toUpperCase() +
+                                  description.substring(1),
+                              style: TextStyle(
+                                color: Data.secondaryColor,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 22,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  Expanded(
+                    flex: 1,
+                    child: Row(
+                      children: [
+                        Expanded(
+                          flex: 1,
+                          child: Center(
+                            child: Text(
+                              Data.epochToFullDate(currentEpoch),
+                              style: TextStyle(
+                                color: Data.secondaryColor,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 22,
+                              ),
+                            ),
                           ),
                         ),
                       ],
                     ),
                   ),
                   Expanded(
-                    flex: 3,
+                    flex: 4,
                     child: Container(
                       width: MediaQuery.of(context).size.width,
-                      child: ListView(
-                        // mainAxisAlignment: MainAxisAlignment.start,
+                      child: SingleChildScrollView(
                         scrollDirection: Axis.horizontal,
-                        children: [
-                          Forecast(
-                            epoch: weatherJSON['daily'][1]['dt'],
-                            icon: weatherJSON['daily'][1]['weather'][0]['icon'],
-                            temp: weatherJSON['daily'][1]['temp']['day'],
-                          ),
-                        ],
+                        child: Row(
+                          children: [
+                            InkWell(
+                              onTap: () {
+                                setState(() {
+                                  temperature = Data.roundOff(double.parse(
+                                      weatherJSON['current']['temp']
+                                          .toString()));
+                                  feelsLike = Data.roundOff(double.parse(
+                                      weatherJSON['current']['feels_like']
+                                          .toString()));
+                                  description = weatherJSON['current']
+                                      ['weather'][0]['main'];
+                                  currentEpoch = weatherJSON['current']['dt'];
+                                  currentWeatherIcon = weatherJSON['current']
+                                      ['weather'][0]['icon'];
+                                  currentWindSpeed =
+                                      weatherJSON['current']['wind_speed'];
+                                  humidity = weatherJSON['current']['humidity'];
+                                  for (int i = 0;
+                                      i < forecastColors.length;
+                                      i++) {
+                                    if (i == 0) {
+                                      forecastColors[i] = Data.primaryColor;
+                                    } else {
+                                      forecastColors[i] =
+                                          Data.forecastBackgroundColor;
+                                    }
+                                  }
+                                });
+                              },
+                              child: Container(
+                                width: 130,
+                                margin: EdgeInsets.all(5),
+                                decoration: BoxDecoration(
+                                  color: forecastColors[0],
+                                  borderRadius: BorderRadius.circular(25),
+                                ),
+                                child: Column(
+                                  children: [
+                                    Expanded(
+                                      flex: 3,
+                                      child: Column(
+                                        children: [
+                                          Container(
+                                            margin: EdgeInsets.only(top: 10),
+                                            child: Text(
+                                              Data.epochToDay(
+                                                  weatherJSON['current']['dt']),
+                                              style: TextStyle(
+                                                color: Data.secondaryColor,
+                                                fontSize: 25,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                          ),
+                                          Container(
+                                            child: Text(
+                                              Data.epochToDate(
+                                                  weatherJSON['current']['dt']),
+                                              style: TextStyle(
+                                                color: Data.secondaryColor,
+                                                fontSize: 25,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    Expanded(
+                                      flex: 3,
+                                      child: Container(
+                                        alignment: Alignment.bottomCenter,
+                                        child: CachedNetworkImage(
+                                          imageUrl:
+                                              'http://openweathermap.org/img/wn/${weatherJSON['current']['weather'][0]['icon']}@2x.png',
+                                          fit: BoxFit.fitHeight,
+                                        ),
+                                      ),
+                                    ),
+                                    Expanded(
+                                      flex: 2,
+                                      child: Container(
+                                        margin: EdgeInsets.only(bottom: 15),
+                                        alignment: Alignment.bottomCenter,
+                                        child: Text(
+                                          Data.roundOff(double.parse(
+                                                  weatherJSON['current']['temp']
+                                                      .toString())) +
+                                              '\u00B0',
+                                          style: TextStyle(
+                                            color: Data.secondaryColor,
+                                            fontSize: 37,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                            InkWell(
+                              onTap: () {
+                                setState(() {
+                                  temperature = Data.roundOff(double.parse(
+                                      weatherJSON['daily'][1]['temp']['day']
+                                          .toString()));
+                                  feelsLike = Data.roundOff(double.parse(
+                                      weatherJSON['daily'][1]['feels_like']
+                                              ['day']
+                                          .toString()));
+                                  description = weatherJSON['daily'][1]
+                                      ['weather'][0]['description'];
+                                  currentEpoch = weatherJSON['daily'][1]['dt'];
+                                  currentWeatherIcon = weatherJSON['daily'][1]
+                                      ['weather'][0]['icon'];
+                                  currentWindSpeed =
+                                      weatherJSON['daily'][1]['wind_speed'];
+                                  humidity =
+                                      weatherJSON['daily'][1]['humidity'];
+                                  for (int i = 0;
+                                      i < forecastColors.length;
+                                      i++) {
+                                    if (i == 1) {
+                                      forecastColors[i] = Data.primaryColor;
+                                    } else {
+                                      forecastColors[i] =
+                                          Data.forecastBackgroundColor;
+                                    }
+                                  }
+                                });
+                              },
+                              child: Container(
+                                width: 130,
+                                margin: EdgeInsets.all(5),
+                                decoration: BoxDecoration(
+                                  color: forecastColors[1],
+                                  borderRadius: BorderRadius.circular(25),
+                                ),
+                                child: Column(
+                                  children: [
+                                    Expanded(
+                                      flex: 3,
+                                      child: Column(
+                                        children: [
+                                          Container(
+                                            margin: EdgeInsets.only(top: 10),
+                                            child: Text(
+                                              Data.epochToDay(
+                                                  weatherJSON['daily'][1]
+                                                      ['dt']),
+                                              style: TextStyle(
+                                                color: Data.secondaryColor,
+                                                fontSize: 25,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                          ),
+                                          Container(
+                                            child: Text(
+                                              Data.epochToDate(
+                                                  weatherJSON['daily'][1]
+                                                      ['dt']),
+                                              style: TextStyle(
+                                                color: Data.secondaryColor,
+                                                fontSize: 25,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    Expanded(
+                                      flex: 3,
+                                      child: Container(
+                                        alignment: Alignment.bottomCenter,
+                                        child: CachedNetworkImage(
+                                          imageUrl:
+                                              'http://openweathermap.org/img/wn/${weatherJSON['daily'][1]['weather'][0]['icon']}@2x.png',
+                                          fit: BoxFit.fitHeight,
+                                        ),
+                                      ),
+                                    ),
+                                    Expanded(
+                                      flex: 2,
+                                      child: Container(
+                                        margin: EdgeInsets.only(bottom: 15),
+                                        alignment: Alignment.bottomCenter,
+                                        child: Text(
+                                          Data.roundOff(double.parse(
+                                                  weatherJSON['daily'][1]
+                                                          ['temp']['day']
+                                                      .toString())) +
+                                              '\u00B0',
+                                          style: TextStyle(
+                                            color: Data.secondaryColor,
+                                            fontSize: 37,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                            InkWell(
+                              onTap: () {
+                                setState(() {
+                                  temperature = Data.roundOff(double.parse(
+                                      weatherJSON['daily'][2]['temp']['day']
+                                          .toString()));
+                                  feelsLike = Data.roundOff(double.parse(
+                                      weatherJSON['daily'][2]['feels_like']
+                                              ['day']
+                                          .toString()));
+                                  description = weatherJSON['daily'][2]
+                                      ['weather'][0]['description'];
+                                  currentEpoch = weatherJSON['daily'][2]['dt'];
+                                  currentWeatherIcon = weatherJSON['daily'][2]
+                                      ['weather'][0]['icon'];
+                                  currentWindSpeed =
+                                      weatherJSON['daily'][2]['wind_speed'];
+                                  humidity =
+                                      weatherJSON['daily'][2]['humidity'];
+                                  for (int i = 0;
+                                      i < forecastColors.length;
+                                      i++) {
+                                    if (i == 2) {
+                                      forecastColors[i] = Data.primaryColor;
+                                    } else {
+                                      forecastColors[i] =
+                                          Data.forecastBackgroundColor;
+                                    }
+                                  }
+                                });
+                              },
+                              child: Container(
+                                width: 130,
+                                margin: EdgeInsets.all(5),
+                                decoration: BoxDecoration(
+                                  color: forecastColors[2],
+                                  borderRadius: BorderRadius.circular(25),
+                                ),
+                                child: Column(
+                                  children: [
+                                    Expanded(
+                                      flex: 3,
+                                      child: Column(
+                                        children: [
+                                          Container(
+                                            margin: EdgeInsets.only(top: 10),
+                                            child: Text(
+                                              Data.epochToDay(
+                                                  weatherJSON['daily'][2]
+                                                      ['dt']),
+                                              style: TextStyle(
+                                                color: Data.secondaryColor,
+                                                fontSize: 25,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                          ),
+                                          Container(
+                                            child: Text(
+                                              Data.epochToDate(
+                                                  weatherJSON['daily'][2]
+                                                      ['dt']),
+                                              style: TextStyle(
+                                                color: Data.secondaryColor,
+                                                fontSize: 25,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    Expanded(
+                                      flex: 3,
+                                      child: Container(
+                                        alignment: Alignment.bottomCenter,
+                                        child: CachedNetworkImage(
+                                          imageUrl:
+                                              'http://openweathermap.org/img/wn/${weatherJSON['daily'][2]['weather'][0]['icon']}@2x.png',
+                                          fit: BoxFit.fitHeight,
+                                        ),
+                                      ),
+                                    ),
+                                    Expanded(
+                                        flex: 2,
+                                        child: Container(
+                                          margin: EdgeInsets.only(bottom: 15),
+                                          alignment: Alignment.bottomCenter,
+                                          child: Text(
+                                            Data.roundOff(double.parse(
+                                                    weatherJSON['daily'][2]
+                                                            ['temp']['day']
+                                                        .toString())) +
+                                                '\u00B0',
+                                            style: TextStyle(
+                                              color: Data.secondaryColor,
+                                              fontSize: 37,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        )),
+                                  ],
+                                ),
+                              ),
+                            ),
+                            InkWell(
+                              onTap: () {
+                                setState(() {
+                                  temperature = Data.roundOff(double.parse(
+                                      weatherJSON['daily'][3]['temp']['day']
+                                          .toString()));
+                                  feelsLike = Data.roundOff(double.parse(
+                                      weatherJSON['daily'][3]['feels_like']
+                                              ['day']
+                                          .toString()));
+                                  description = weatherJSON['daily'][3]
+                                      ['weather'][0]['description'];
+                                  currentEpoch = weatherJSON['daily'][3]['dt'];
+                                  currentWeatherIcon = weatherJSON['daily'][3]
+                                      ['weather'][0]['icon'];
+                                  currentWindSpeed =
+                                      weatherJSON['daily'][3]['wind_speed'];
+                                  humidity =
+                                      weatherJSON['daily'][3]['humidity'];
+                                  for (int i = 0;
+                                      i < forecastColors.length;
+                                      i++) {
+                                    if (i == 3) {
+                                      forecastColors[i] = Data.primaryColor;
+                                    } else {
+                                      forecastColors[i] =
+                                          Data.forecastBackgroundColor;
+                                    }
+                                  }
+                                });
+                              },
+                              child: Container(
+                                width: 130,
+                                margin: EdgeInsets.all(5),
+                                decoration: BoxDecoration(
+                                  color: forecastColors[3],
+                                  borderRadius: BorderRadius.circular(25),
+                                ),
+                                child: Column(
+                                  children: [
+                                    Expanded(
+                                      flex: 3,
+                                      child: Column(
+                                        children: [
+                                          Container(
+                                            margin: EdgeInsets.only(top: 10),
+                                            child: Text(
+                                              Data.epochToDay(
+                                                  weatherJSON['daily'][3]
+                                                      ['dt']),
+                                              style: TextStyle(
+                                                color: Data.secondaryColor,
+                                                fontSize: 25,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                          ),
+                                          Container(
+                                            child: Text(
+                                              Data.epochToDate(
+                                                  weatherJSON['daily'][3]
+                                                      ['dt']),
+                                              style: TextStyle(
+                                                color: Data.secondaryColor,
+                                                fontSize: 25,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    Expanded(
+                                      flex: 3,
+                                      child: Container(
+                                        alignment: Alignment.bottomCenter,
+                                        child: CachedNetworkImage(
+                                          imageUrl:
+                                              'http://openweathermap.org/img/wn/${weatherJSON['daily'][3]['weather'][0]['icon']}@2x.png',
+                                          fit: BoxFit.fitHeight,
+                                        ),
+                                      ),
+                                    ),
+                                    Expanded(
+                                        flex: 2,
+                                        child: Container(
+                                          margin: EdgeInsets.only(bottom: 15),
+                                          alignment: Alignment.bottomCenter,
+                                          child: Text(
+                                            Data.roundOff(double.parse(
+                                                    weatherJSON['daily'][3]
+                                                            ['temp']['day']
+                                                        .toString())) +
+                                                '\u00B0',
+                                            style: TextStyle(
+                                              color: Data.secondaryColor,
+                                              fontSize: 37,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        )),
+                                  ],
+                                ),
+                              ),
+                            ),
+                            InkWell(
+                              onTap: () {
+                                setState(() {
+                                  temperature = Data.roundOff(double.parse(
+                                      weatherJSON['daily'][4]['temp']['day']
+                                          .toString()));
+                                  feelsLike = Data.roundOff(double.parse(
+                                      weatherJSON['daily'][4]['feels_like']
+                                              ['day']
+                                          .toString()));
+                                  description = weatherJSON['daily'][4]
+                                      ['weather'][0]['description'];
+                                  currentEpoch = weatherJSON['daily'][4]['dt'];
+                                  currentWeatherIcon = weatherJSON['daily'][4]
+                                      ['weather'][0]['icon'];
+                                  currentWindSpeed =
+                                      weatherJSON['daily'][4]['wind_speed'];
+                                  humidity =
+                                      weatherJSON['daily'][4]['humidity'];
+                                  for (int i = 0;
+                                      i < forecastColors.length;
+                                      i++) {
+                                    if (i == 4) {
+                                      forecastColors[i] = Data.primaryColor;
+                                    } else {
+                                      forecastColors[i] =
+                                          Data.forecastBackgroundColor;
+                                    }
+                                  }
+                                });
+                              },
+                              child: Container(
+                                width: 130,
+                                margin: EdgeInsets.all(5),
+                                decoration: BoxDecoration(
+                                  color: forecastColors[4],
+                                  borderRadius: BorderRadius.circular(25),
+                                ),
+                                child: Column(
+                                  children: [
+                                    Expanded(
+                                      flex: 3,
+                                      child: Column(
+                                        children: [
+                                          Container(
+                                            margin: EdgeInsets.only(top: 10),
+                                            child: Text(
+                                              Data.epochToDay(
+                                                  weatherJSON['daily'][4]
+                                                      ['dt']),
+                                              style: TextStyle(
+                                                color: Data.secondaryColor,
+                                                fontSize: 25,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                          ),
+                                          Container(
+                                            child: Text(
+                                              Data.epochToDate(
+                                                  weatherJSON['daily'][4]
+                                                      ['dt']),
+                                              style: TextStyle(
+                                                color: Data.secondaryColor,
+                                                fontSize: 25,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    Expanded(
+                                      flex: 3,
+                                      child: Container(
+                                        alignment: Alignment.bottomCenter,
+                                        child: CachedNetworkImage(
+                                          imageUrl:
+                                              'http://openweathermap.org/img/wn/${weatherJSON['daily'][4]['weather'][0]['icon']}@2x.png',
+                                          fit: BoxFit.fitHeight,
+                                        ),
+                                      ),
+                                    ),
+                                    Expanded(
+                                      flex: 2,
+                                      child: Container(
+                                        margin: EdgeInsets.only(bottom: 15),
+                                        alignment: Alignment.bottomCenter,
+                                        child: Text(
+                                          Data.roundOff(double.parse(
+                                                  weatherJSON['daily'][4]
+                                                          ['temp']['day']
+                                                      .toString())) +
+                                              '\u00B0',
+                                          style: TextStyle(
+                                            color: Data.secondaryColor,
+                                            fontSize: 37,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                            InkWell(
+                              onTap: () {
+                                setState(() {
+                                  temperature = Data.roundOff(double.parse(
+                                      weatherJSON['daily'][5]['temp']['day']
+                                          .toString()));
+                                  feelsLike = Data.roundOff(double.parse(
+                                      weatherJSON['daily'][5]['feels_like']
+                                              ['day']
+                                          .toString()));
+                                  description = weatherJSON['daily'][5]
+                                      ['weather'][0]['description'];
+                                  currentEpoch = weatherJSON['daily'][5]['dt'];
+                                  currentWeatherIcon = weatherJSON['daily'][5]
+                                      ['weather'][0]['icon'];
+                                  currentWindSpeed =
+                                      weatherJSON['daily'][5]['wind_speed'];
+                                  humidity =
+                                      weatherJSON['daily'][5]['humidity'];
+                                  for (int i = 0;
+                                      i < forecastColors.length;
+                                      i++) {
+                                    if (i == 5) {
+                                      forecastColors[i] = Data.primaryColor;
+                                    } else {
+                                      forecastColors[i] =
+                                          Data.forecastBackgroundColor;
+                                    }
+                                  }
+                                });
+                              },
+                              child: Container(
+                                width: 130,
+                                margin: EdgeInsets.all(5),
+                                decoration: BoxDecoration(
+                                  color: forecastColors[5],
+                                  borderRadius: BorderRadius.circular(25),
+                                ),
+                                child: Column(
+                                  children: [
+                                    Expanded(
+                                      flex: 3,
+                                      child: Column(
+                                        children: [
+                                          Container(
+                                            margin: EdgeInsets.only(top: 10),
+                                            child: Text(
+                                              Data.epochToDay(
+                                                  weatherJSON['daily'][5]
+                                                      ['dt']),
+                                              style: TextStyle(
+                                                color: Data.secondaryColor,
+                                                fontSize: 25,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                          ),
+                                          Container(
+                                            child: Text(
+                                              Data.epochToDate(
+                                                  weatherJSON['daily'][5]
+                                                      ['dt']),
+                                              style: TextStyle(
+                                                color: Data.secondaryColor,
+                                                fontSize: 25,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    Expanded(
+                                      flex: 3,
+                                      child: Container(
+                                        alignment: Alignment.bottomCenter,
+                                        child: CachedNetworkImage(
+                                          imageUrl:
+                                              'http://openweathermap.org/img/wn/${weatherJSON['daily'][5]['weather'][0]['icon']}@2x.png',
+                                          fit: BoxFit.fitHeight,
+                                        ),
+                                      ),
+                                    ),
+                                    Expanded(
+                                      flex: 2,
+                                      child: Container(
+                                        margin: EdgeInsets.only(bottom: 15),
+                                        alignment: Alignment.bottomCenter,
+                                        child: Text(
+                                          Data.roundOff(double.parse(
+                                                  weatherJSON['daily'][5]
+                                                          ['temp']['day']
+                                                      .toString())) +
+                                              '\u00B0',
+                                          style: TextStyle(
+                                            color: Data.secondaryColor,
+                                            fontSize: 37,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                            InkWell(
+                              onTap: () {
+                                setState(() {
+                                  temperature = Data.roundOff(double.parse(
+                                      weatherJSON['daily'][6]['temp']['day']
+                                          .toString()));
+                                  feelsLike = Data.roundOff(double.parse(
+                                      weatherJSON['daily'][6]['feels_like']
+                                              ['day']
+                                          .toString()));
+                                  description = weatherJSON['daily'][6]
+                                      ['weather'][0]['description'];
+                                  currentEpoch = weatherJSON['daily'][6]['dt'];
+                                  currentWeatherIcon = weatherJSON['daily'][6]
+                                      ['weather'][0]['icon'];
+                                  currentWindSpeed =
+                                      weatherJSON['daily'][6]['wind_speed'];
+                                  humidity =
+                                      weatherJSON['daily'][6]['humidity'];
+                                  for (int i = 0;
+                                      i < forecastColors.length;
+                                      i++) {
+                                    if (i == 6) {
+                                      forecastColors[i] = Data.primaryColor;
+                                    } else {
+                                      forecastColors[i] =
+                                          Data.forecastBackgroundColor;
+                                    }
+                                  }
+                                });
+                              },
+                              child: Container(
+                                width: 130,
+                                margin: EdgeInsets.all(5),
+                                decoration: BoxDecoration(
+                                  color: forecastColors[6],
+                                  borderRadius: BorderRadius.circular(25),
+                                ),
+                                child: Column(
+                                  children: [
+                                    Expanded(
+                                      flex: 3,
+                                      child: Column(
+                                        children: [
+                                          Container(
+                                            margin: EdgeInsets.only(top: 10),
+                                            child: Text(
+                                              Data.epochToDay(
+                                                  weatherJSON['daily'][6]
+                                                      ['dt']),
+                                              style: TextStyle(
+                                                color: Data.secondaryColor,
+                                                fontSize: 25,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                          ),
+                                          Container(
+                                            child: Text(
+                                              Data.epochToDate(
+                                                  weatherJSON['daily'][6]
+                                                      ['dt']),
+                                              style: TextStyle(
+                                                color: Data.secondaryColor,
+                                                fontSize: 25,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    Expanded(
+                                      flex: 3,
+                                      child: Container(
+                                        alignment: Alignment.bottomCenter,
+                                        child: CachedNetworkImage(
+                                          imageUrl:
+                                              'http://openweathermap.org/img/wn/${weatherJSON['daily'][6]['weather'][0]['icon']}@2x.png',
+                                          fit: BoxFit.fitHeight,
+                                        ),
+                                      ),
+                                    ),
+                                    Expanded(
+                                      flex: 2,
+                                      child: Container(
+                                        margin: EdgeInsets.only(bottom: 15),
+                                        alignment: Alignment.bottomCenter,
+                                        child: Text(
+                                          Data.roundOff(double.parse(
+                                                  weatherJSON['daily'][6]
+                                                          ['temp']['day']
+                                                      .toString())) +
+                                              '\u00B0',
+                                          style: TextStyle(
+                                            color: Data.secondaryColor,
+                                            fontSize: 37,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                            InkWell(
+                              onTap: () {
+                                setState(() {
+                                  temperature = Data.roundOff(double.parse(
+                                      weatherJSON['daily'][7]['temp']['day']
+                                          .toString()));
+                                  feelsLike = Data.roundOff(double.parse(
+                                      weatherJSON['daily'][7]['feels_like']
+                                              ['day']
+                                          .toString()));
+                                  description = weatherJSON['daily'][7]
+                                      ['weather'][0]['description'];
+                                  currentEpoch = weatherJSON['daily'][7]['dt'];
+                                  currentWeatherIcon = weatherJSON['daily'][7]
+                                      ['weather'][0]['icon'];
+                                  currentWindSpeed =
+                                      weatherJSON['daily'][7]['wind_speed'];
+                                  humidity =
+                                      weatherJSON['daily'][7]['humidity'];
+                                  for (int i = 0;
+                                      i < forecastColors.length;
+                                      i++) {
+                                    if (i == 7) {
+                                      forecastColors[i] = Data.primaryColor;
+                                    } else {
+                                      forecastColors[i] =
+                                          Data.forecastBackgroundColor;
+                                    }
+                                  }
+                                });
+                              },
+                              child: Container(
+                                width: 130,
+                                margin: EdgeInsets.all(5),
+                                decoration: BoxDecoration(
+                                  color: forecastColors[7],
+                                  borderRadius: BorderRadius.circular(25),
+                                ),
+                                child: Column(
+                                  children: [
+                                    Expanded(
+                                      flex: 3,
+                                      child: Column(
+                                        children: [
+                                          Container(
+                                            margin: EdgeInsets.only(top: 10),
+                                            child: Text(
+                                              Data.epochToDay(
+                                                  weatherJSON['daily'][7]
+                                                      ['dt']),
+                                              style: TextStyle(
+                                                color: Data.secondaryColor,
+                                                fontSize: 25,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                          ),
+                                          Container(
+                                            child: Text(
+                                              Data.epochToDate(
+                                                  weatherJSON['daily'][7]
+                                                      ['dt']),
+                                              style: TextStyle(
+                                                color: Data.secondaryColor,
+                                                fontSize: 25,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    Expanded(
+                                      flex: 3,
+                                      child: Container(
+                                        alignment: Alignment.bottomCenter,
+                                        child: CachedNetworkImage(
+                                          imageUrl:
+                                              'http://openweathermap.org/img/wn/${weatherJSON['daily'][7]['weather'][0]['icon']}@2x.png',
+                                          fit: BoxFit.fitHeight,
+                                        ),
+                                      ),
+                                    ),
+                                    Expanded(
+                                        flex: 2,
+                                        child: Container(
+                                          margin: EdgeInsets.only(bottom: 15),
+                                          alignment: Alignment.bottomCenter,
+                                          child: Text(
+                                            Data.roundOff(double.parse(
+                                                    weatherJSON['daily'][7]
+                                                            ['temp']['day']
+                                                        .toString())) +
+                                                '\u00B0',
+                                            style: TextStyle(
+                                              color: Data.secondaryColor,
+                                              fontSize: 37,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        )),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),

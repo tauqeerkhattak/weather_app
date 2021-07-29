@@ -1,5 +1,7 @@
 import 'dart:convert';
-import 'dart:ffi';
+import 'dart:typed_data';
+import 'dart:ui' as ui;
+import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:flutter_weather_bg_null_safety/utils/weather_type.dart';
@@ -9,6 +11,7 @@ class Data {
   static Color primaryColor = Colors.cyan;
   static Color secondaryColor = Colors.white;
   static Color temperatureColor = Colors.black;
+  static Color forecastBackgroundColor = Colors.transparent.withOpacity(0.1);
 
   static Future<dynamic> getWeatherData({required double lat,required double long}) async {
     final response = await http.get(
@@ -94,5 +97,26 @@ class Data {
     DateFormat format = DateFormat('E');
     var day = format.format(date);
     return day;
+  }
+
+  static String epochToDate (int epoch) {
+    DateTime dateTime = DateTime.fromMillisecondsSinceEpoch(epoch * 1000);
+    DateFormat format = DateFormat('MMMd');
+    var date = format.format(dateTime);
+    return date;
+  }
+
+  static String epochToFullDate (int epoch) {
+    DateTime dateTime = DateTime.fromMillisecondsSinceEpoch(epoch * 1000);
+    DateFormat format = DateFormat('EEEE, MMMM d, yyyy');
+    var date = format.format(dateTime);
+    return date;
+  }
+
+  static Future<Uint8List> getBytesFromAsset(String path, int width) async {
+    ByteData data = await rootBundle.load(path);
+    ui.Codec codec = await ui.instantiateImageCodec(data.buffer.asUint8List(), targetWidth: width);
+    ui.FrameInfo fi = await codec.getNextFrame();
+    return (await fi.image.toByteData(format: ui.ImageByteFormat.png))!.buffer.asUint8List();
   }
 }
