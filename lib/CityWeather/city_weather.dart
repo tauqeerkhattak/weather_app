@@ -35,17 +35,61 @@ class _CityWeatherState extends State<CityWeather> {
     Data.forecastBackgroundColor,
     Data.forecastBackgroundColor,
   ];
+  List <String> temperaturesOfWeek = [];
 
-  initState() {
-    temperature =
-        Data.roundOff(double.parse(weatherJSON['current']['temp'].toString()));
-    feelsLike = Data.roundOff(
-        double.parse((weatherJSON['current']['feels_like']).toString()));
+  Future <void> setData () async {
+    Data.getUnit(Data.roundOff(double.parse(weatherJSON['current']['temp'].toString()))).then((value) {
+      setState(() {
+        temperature = value;
+      });
+    });
+    Data.getUnit(Data.roundOff(
+        double.parse((weatherJSON['current']['feels_like']).toString()))).then((value) {
+          setState(() {
+            feelsLike = value;
+          });
+    });
     description = weatherJSON['current']['weather'][0]['main'];
     currentEpoch = weatherJSON['current']['dt'];
     currentWeatherIcon = weatherJSON['current']['weather'][0]['icon'];
-    currentWindSpeed = weatherJSON['current']['wind_speed'];
+    currentWindSpeed = double.parse(weatherJSON['current']['wind_speed'].toString());
     humidity = weatherJSON['current']['humidity'];
+    temperaturesOfWeek.add(await Data.getUnit(Data.roundOff(double.parse(
+        weatherJSON['current']['temp']
+            .toString()))));
+    temperaturesOfWeek.add(await Data.getUnit(Data.roundOff(double.parse(
+        weatherJSON['daily'][1]
+        ['temp']['day']
+            .toString()))));
+    temperaturesOfWeek.add(await Data.getUnit(Data.roundOff(double.parse(
+        weatherJSON['daily'][2]
+        ['temp']['day']
+            .toString()))));
+    temperaturesOfWeek.add(await Data.getUnit(Data.roundOff(double.parse(
+        weatherJSON['daily'][3]
+        ['temp']['day']
+            .toString()))));
+    temperaturesOfWeek.add(await Data.getUnit(Data.roundOff(double.parse(
+        weatherJSON['daily'][4]
+        ['temp']['day']
+            .toString()))));
+    temperaturesOfWeek.add(await Data.getUnit(Data.roundOff(double.parse(
+        weatherJSON['daily'][5]
+        ['temp']['day']
+            .toString()))));
+    temperaturesOfWeek.add(await Data.getUnit(Data.roundOff(double.parse(
+        weatherJSON['daily'][6]
+        ['temp']['day']
+            .toString()))));
+    temperaturesOfWeek.add(await Data.getUnit(Data.roundOff(double.parse(
+        weatherJSON['daily'][7]
+        ['temp']['day']
+            .toString()))));
+  }
+
+  @override
+  initState() {
+    setData();
     super.initState();
   }
 
@@ -98,7 +142,7 @@ class _CityWeatherState extends State<CityWeather> {
                           ],
                         ),
                         Text(
-                          'Feels like $feelsLike\u00B0',
+                          'Feels like $feelsLike \u00b0',
                           style: TextStyle(
                             color: Data.secondaryColor,
                             fontSize: 22,
@@ -240,14 +284,16 @@ class _CityWeatherState extends State<CityWeather> {
                         child: Row(
                           children: [
                             InkWell(
-                              onTap: () {
+                              onTap: () async {
+                                String temp = await Data.getUnit(Data.roundOff(double.parse(
+                                    weatherJSON['current']['temp']
+                                        .toString())));
+                                String feels_like = await Data.getUnit(Data.roundOff(double.parse(
+                                    weatherJSON['current']['feels_like']
+                                        .toString())));
                                 setState(() {
-                                  temperature = Data.roundOff(double.parse(
-                                      weatherJSON['current']['temp']
-                                          .toString()));
-                                  feelsLike = Data.roundOff(double.parse(
-                                      weatherJSON['current']['feels_like']
-                                          .toString()));
+                                  temperature = temp;
+                                  feelsLike = feels_like;
                                   description = weatherJSON['current']
                                       ['weather'][0]['main'];
                                   currentEpoch = weatherJSON['current']['dt'];
@@ -281,26 +327,32 @@ class _CityWeatherState extends State<CityWeather> {
                                       flex: 3,
                                       child: Column(
                                         children: [
-                                          Container(
-                                            margin: EdgeInsets.only(top: 10),
-                                            child: Text(
-                                              Data.epochToDay(
-                                                  weatherJSON['current']['dt']),
-                                              style: TextStyle(
-                                                color: Data.secondaryColor,
-                                                fontSize: 25,
-                                                fontWeight: FontWeight.bold,
+                                          Expanded(
+                                            flex: 1,
+                                            child: Container(
+                                              margin: EdgeInsets.only(top: 10),
+                                              child: Text(
+                                                Data.epochToDay(
+                                                    weatherJSON['current']['dt']),
+                                                style: TextStyle(
+                                                  color: Data.secondaryColor,
+                                                  fontSize: 25,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
                                               ),
                                             ),
                                           ),
-                                          Container(
-                                            child: Text(
-                                              Data.epochToDate(
-                                                  weatherJSON['current']['dt']),
-                                              style: TextStyle(
-                                                color: Data.secondaryColor,
-                                                fontSize: 25,
-                                                fontWeight: FontWeight.bold,
+                                          Expanded(
+                                            flex: 1,
+                                            child: Container(
+                                              child: Text(
+                                                Data.epochToDate(
+                                                    weatherJSON['current']['dt']),
+                                                style: TextStyle(
+                                                  color: Data.secondaryColor,
+                                                  fontSize: 25,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
                                               ),
                                             ),
                                           ),
@@ -324,10 +376,7 @@ class _CityWeatherState extends State<CityWeather> {
                                         margin: EdgeInsets.only(bottom: 15),
                                         alignment: Alignment.bottomCenter,
                                         child: Text(
-                                          Data.roundOff(double.parse(
-                                                  weatherJSON['current']['temp']
-                                                      .toString())) +
-                                              '\u00B0',
+                                          temperaturesOfWeek[0] + '\u00B0',
                                           style: TextStyle(
                                             color: Data.secondaryColor,
                                             fontSize: 37,
@@ -341,15 +390,17 @@ class _CityWeatherState extends State<CityWeather> {
                               ),
                             ),
                             InkWell(
-                              onTap: () {
+                              onTap: () async {
+                                String temp = await Data.getUnit(Data.roundOff(double.parse(
+                                    weatherJSON['daily'][1]['temp']['day']
+                                        .toString())));
+                                String feels_like = await Data.getUnit(Data.roundOff(double.parse(
+                                    weatherJSON['daily'][1]['feels_like']
+                                    ['day']
+                                        .toString())));
                                 setState(() {
-                                  temperature = Data.roundOff(double.parse(
-                                      weatherJSON['daily'][1]['temp']['day']
-                                          .toString()));
-                                  feelsLike = Data.roundOff(double.parse(
-                                      weatherJSON['daily'][1]['feels_like']
-                                              ['day']
-                                          .toString()));
+                                  temperature = temp;
+                                  feelsLike = feels_like;
                                   description = weatherJSON['daily'][1]
                                       ['weather'][0]['description'];
                                   currentEpoch = weatherJSON['daily'][1]['dt'];
@@ -429,11 +480,7 @@ class _CityWeatherState extends State<CityWeather> {
                                         margin: EdgeInsets.only(bottom: 15),
                                         alignment: Alignment.bottomCenter,
                                         child: Text(
-                                          Data.roundOff(double.parse(
-                                                  weatherJSON['daily'][1]
-                                                          ['temp']['day']
-                                                      .toString())) +
-                                              '\u00B0',
+                                          temperaturesOfWeek[1] + '\u00B0',
                                           style: TextStyle(
                                             color: Data.secondaryColor,
                                             fontSize: 37,
@@ -447,15 +494,17 @@ class _CityWeatherState extends State<CityWeather> {
                               ),
                             ),
                             InkWell(
-                              onTap: () {
+                              onTap: () async {
+                                String temp = await Data.getUnit(Data.roundOff(double.parse(
+                                    weatherJSON['daily'][2]['temp']['day']
+                                        .toString())));
+                                String feels_like = Data.roundOff(double.parse(
+                                    weatherJSON['daily'][2]['feels_like']
+                                    ['day']
+                                        .toString()));
                                 setState(() {
-                                  temperature = Data.roundOff(double.parse(
-                                      weatherJSON['daily'][2]['temp']['day']
-                                          .toString()));
-                                  feelsLike = Data.roundOff(double.parse(
-                                      weatherJSON['daily'][2]['feels_like']
-                                              ['day']
-                                          .toString()));
+                                  temperature = temp;
+                                  feelsLike = feels_like;
                                   description = weatherJSON['daily'][2]
                                       ['weather'][0]['description'];
                                   currentEpoch = weatherJSON['daily'][2]['dt'];
@@ -535,11 +584,7 @@ class _CityWeatherState extends State<CityWeather> {
                                           margin: EdgeInsets.only(bottom: 15),
                                           alignment: Alignment.bottomCenter,
                                           child: Text(
-                                            Data.roundOff(double.parse(
-                                                    weatherJSON['daily'][2]
-                                                            ['temp']['day']
-                                                        .toString())) +
-                                                '\u00B0',
+                                            temperaturesOfWeek[2] + '\u00B0',
                                             style: TextStyle(
                                               color: Data.secondaryColor,
                                               fontSize: 37,
@@ -552,15 +597,17 @@ class _CityWeatherState extends State<CityWeather> {
                               ),
                             ),
                             InkWell(
-                              onTap: () {
+                              onTap: () async {
+                                String temp = await Data.getUnit(Data.roundOff(double.parse(
+                                    weatherJSON['daily'][3]['temp']['day']
+                                        .toString())));
+                                String feels_like = await Data.getUnit(Data.roundOff(double.parse(
+                                    weatherJSON['daily'][3]['feels_like']
+                                    ['day']
+                                        .toString())));
                                 setState(() {
-                                  temperature = Data.roundOff(double.parse(
-                                      weatherJSON['daily'][3]['temp']['day']
-                                          .toString()));
-                                  feelsLike = Data.roundOff(double.parse(
-                                      weatherJSON['daily'][3]['feels_like']
-                                              ['day']
-                                          .toString()));
+                                  temperature = temp;
+                                  feelsLike = feels_like;
                                   description = weatherJSON['daily'][3]
                                       ['weather'][0]['description'];
                                   currentEpoch = weatherJSON['daily'][3]['dt'];
@@ -640,11 +687,7 @@ class _CityWeatherState extends State<CityWeather> {
                                           margin: EdgeInsets.only(bottom: 15),
                                           alignment: Alignment.bottomCenter,
                                           child: Text(
-                                            Data.roundOff(double.parse(
-                                                    weatherJSON['daily'][3]
-                                                            ['temp']['day']
-                                                        .toString())) +
-                                                '\u00B0',
+                                            temperaturesOfWeek[3] + '\u00B0',
                                             style: TextStyle(
                                               color: Data.secondaryColor,
                                               fontSize: 37,
@@ -657,15 +700,17 @@ class _CityWeatherState extends State<CityWeather> {
                               ),
                             ),
                             InkWell(
-                              onTap: () {
+                              onTap: () async {
+                                String temp = await Data.getUnit(Data.roundOff(double.parse(
+                                    weatherJSON['daily'][4]['temp']['day']
+                                        .toString())));
+                                String feels_like = await Data.getUnit(Data.roundOff(double.parse(
+                                    weatherJSON['daily'][4]['feels_like']
+                                    ['day']
+                                        .toString())));
                                 setState(() {
-                                  temperature = Data.roundOff(double.parse(
-                                      weatherJSON['daily'][4]['temp']['day']
-                                          .toString()));
-                                  feelsLike = Data.roundOff(double.parse(
-                                      weatherJSON['daily'][4]['feels_like']
-                                              ['day']
-                                          .toString()));
+                                  temperature = temp;
+                                  feelsLike = feels_like;
                                   description = weatherJSON['daily'][4]
                                       ['weather'][0]['description'];
                                   currentEpoch = weatherJSON['daily'][4]['dt'];
@@ -745,11 +790,7 @@ class _CityWeatherState extends State<CityWeather> {
                                         margin: EdgeInsets.only(bottom: 15),
                                         alignment: Alignment.bottomCenter,
                                         child: Text(
-                                          Data.roundOff(double.parse(
-                                                  weatherJSON['daily'][4]
-                                                          ['temp']['day']
-                                                      .toString())) +
-                                              '\u00B0',
+                                          temperaturesOfWeek[4] + '\u00B0',
                                           style: TextStyle(
                                             color: Data.secondaryColor,
                                             fontSize: 37,
@@ -763,15 +804,17 @@ class _CityWeatherState extends State<CityWeather> {
                               ),
                             ),
                             InkWell(
-                              onTap: () {
+                              onTap: () async {
+                                String temp = await Data.getUnit(Data.roundOff(double.parse(
+                                    weatherJSON['daily'][5]['temp']['day']
+                                        .toString())));
+                                String feels_like = await Data.getUnit(Data.roundOff(double.parse(
+                                    weatherJSON['daily'][5]['feels_like']
+                                    ['day']
+                                        .toString())));
                                 setState(() {
-                                  temperature = Data.roundOff(double.parse(
-                                      weatherJSON['daily'][5]['temp']['day']
-                                          .toString()));
-                                  feelsLike = Data.roundOff(double.parse(
-                                      weatherJSON['daily'][5]['feels_like']
-                                              ['day']
-                                          .toString()));
+                                  temperature = temp;
+                                  feelsLike = feels_like;
                                   description = weatherJSON['daily'][5]
                                       ['weather'][0]['description'];
                                   currentEpoch = weatherJSON['daily'][5]['dt'];
@@ -851,10 +894,7 @@ class _CityWeatherState extends State<CityWeather> {
                                         margin: EdgeInsets.only(bottom: 15),
                                         alignment: Alignment.bottomCenter,
                                         child: Text(
-                                          Data.roundOff(double.parse(
-                                                  weatherJSON['daily'][5]
-                                                          ['temp']['day']
-                                                      .toString())) +
+                                          temperaturesOfWeek[5] +
                                               '\u00B0',
                                           style: TextStyle(
                                             color: Data.secondaryColor,
@@ -869,15 +909,17 @@ class _CityWeatherState extends State<CityWeather> {
                               ),
                             ),
                             InkWell(
-                              onTap: () {
+                              onTap: () async {
+                                String temp = await Data.getUnit(Data.roundOff(double.parse(
+                                    weatherJSON['daily'][6]['temp']['day']
+                                        .toString())));
+                                String feels_like = await Data.getUnit(Data.roundOff(double.parse(
+                                    weatherJSON['daily'][6]['feels_like']
+                                    ['day']
+                                        .toString())));
                                 setState(() {
-                                  temperature = Data.roundOff(double.parse(
-                                      weatherJSON['daily'][6]['temp']['day']
-                                          .toString()));
-                                  feelsLike = Data.roundOff(double.parse(
-                                      weatherJSON['daily'][6]['feels_like']
-                                              ['day']
-                                          .toString()));
+                                  temperature = temp;
+                                  feelsLike = feels_like;
                                   description = weatherJSON['daily'][6]
                                       ['weather'][0]['description'];
                                   currentEpoch = weatherJSON['daily'][6]['dt'];
@@ -957,11 +999,7 @@ class _CityWeatherState extends State<CityWeather> {
                                         margin: EdgeInsets.only(bottom: 15),
                                         alignment: Alignment.bottomCenter,
                                         child: Text(
-                                          Data.roundOff(double.parse(
-                                                  weatherJSON['daily'][6]
-                                                          ['temp']['day']
-                                                      .toString())) +
-                                              '\u00B0',
+                                          temperaturesOfWeek[6] + '\u00B0',
                                           style: TextStyle(
                                             color: Data.secondaryColor,
                                             fontSize: 37,
@@ -975,15 +1013,17 @@ class _CityWeatherState extends State<CityWeather> {
                               ),
                             ),
                             InkWell(
-                              onTap: () {
+                              onTap: () async {
+                                String temp = await Data.getUnit(Data.roundOff(double.parse(
+                                    weatherJSON['daily'][7]['temp']['day']
+                                        .toString())));
+                                String feels_like = await Data.getUnit(Data.roundOff(double.parse(
+                                    weatherJSON['daily'][7]['feels_like']
+                                    ['day']
+                                        .toString())));
                                 setState(() {
-                                  temperature = Data.roundOff(double.parse(
-                                      weatherJSON['daily'][7]['temp']['day']
-                                          .toString()));
-                                  feelsLike = Data.roundOff(double.parse(
-                                      weatherJSON['daily'][7]['feels_like']
-                                              ['day']
-                                          .toString()));
+                                  temperature = temp;
+                                  feelsLike = feels_like;
                                   description = weatherJSON['daily'][7]
                                       ['weather'][0]['description'];
                                   currentEpoch = weatherJSON['daily'][7]['dt'];
@@ -1063,18 +1103,14 @@ class _CityWeatherState extends State<CityWeather> {
                                           margin: EdgeInsets.only(bottom: 15),
                                           alignment: Alignment.bottomCenter,
                                           child: Text(
-                                            Data.roundOff(double.parse(
-                                                    weatherJSON['daily'][7]
-                                                            ['temp']['day']
-                                                        .toString())) +
-                                                '\u00B0',
+                                            temperaturesOfWeek[7] + '\u00B0',
                                             style: TextStyle(
                                               color: Data.secondaryColor,
                                               fontSize: 37,
                                               fontWeight: FontWeight.bold,
                                             ),
                                           ),
-                                        )),
+                                        ),),
                                   ],
                                 ),
                               ),

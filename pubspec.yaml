@@ -28,14 +28,21 @@ dependencies:
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.2
-  google_maps_flutter: ^2.0.6
   flutter_weather_bg_null_safety: ^1.0.0
   http: ^0.13.3
   intl: ^0.17.0
   cached_network_image: ^3.1.0
   permission_handler: ^8.1.4
   location: ^4.3.0
-  flutter_overlay_loader: ^0.1.1
+  loading_overlay: ^0.3.0
+  shared_preferences: ^2.0.6
+  about: ^2.0.1
+  barcode_widget: ^2.0.1
+  geocode: ^1.0.1
+  cached_network_marker: ^0.1.1
+  flutter_map: ^0.13.1
+  animated_text_kit: ^4.2.1
+  flutter_local_notifications: ^8.1.1+2
 
 dev_dependencies:
   flutter_test:
@@ -59,6 +66,19 @@ flutter:
     - images/lahore.png
     - images/peshawar.png
     - images/quetta.png
+    - images/abbottabad.png
+    - images/faisalabad.png
+    - images/gujranwala.png
+    - images/gwadar.png
+    - images/hyderabad.png
+    - images/khuzdar.png
+    - images/kohat.png
+    - images/mardan.png
+    - images/multan.png
+    - images/sanghar.png
+    - images/sukkur.png
+    - images/turbat.png
+    - images/loading.gif
     - assets/my_map_style.json
 
   # An image asset can refer to one or more resolution-specific "variants", see

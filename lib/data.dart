@@ -6,9 +6,10 @@ import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:flutter_weather_bg_null_safety/utils/weather_type.dart';
 import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class Data {
-  static Color primaryColor = Colors.cyan;
+  static Color primaryColor = Colors.teal;
   static Color secondaryColor = Colors.white;
   static Color temperatureColor = Colors.black;
   static Color forecastBackgroundColor = Colors.transparent.withOpacity(0.1);
@@ -65,6 +66,21 @@ class Data {
         return WeatherType.foggy;
       default:
         return WeatherType.cloudy;
+    }
+  }
+
+  static Future <String> getUnit (String stringTemp) async {
+    double temperature = double.parse(stringTemp);
+    String result = '';
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    if (prefs.getString('Unit') == 'Celsius') {
+      result = Data.roundOff(temperature);
+      return result;
+    }
+    else {
+      double temp = (temperature * 9/5) + 32;
+      result = Data.roundOff(temp);
+      return result;
     }
   }
 
