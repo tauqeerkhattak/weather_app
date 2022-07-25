@@ -1,10 +1,9 @@
-// @ dart = 2.9
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:weather_app/MapScreen/map_screen.dart';
+import 'package:get/get.dart';
 import 'package:weather_app/Services/notification_service.dart';
+import 'package:weather_app/screens/map_screen/map_screen.dart';
 
-void main () async {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await NotificationService.initializeNotifications();
   NotificationService.showNotification();
@@ -14,7 +13,7 @@ void main () async {
 class WeatherApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return GetMaterialApp(
       home: MapScreen(),
     );
   }

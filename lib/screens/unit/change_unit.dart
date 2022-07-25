@@ -1,17 +1,16 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:weather_app/MapScreen/map_screen.dart';
-import 'package:weather_app/data.dart';
+import 'package:weather_app/screens/map_screen/map_screen.dart';
+import 'package:weather_app/utils/constants.dart';
 
 class ChangeUnit extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Change Temperature Unit'),
+        title: Text('Change Temperature unit'),
         centerTitle: true,
-        backgroundColor: Data.primaryColor,
+        backgroundColor: Constants.primaryColor,
       ),
       body: ChangeUnitBody(),
     );
@@ -25,28 +24,25 @@ class ChangeUnitBody extends StatefulWidget {
   _ChangeUnitBodyState createState() => _ChangeUnitBodyState();
 }
 
-enum Units {Celsius,Fahrenheit}
+enum Units { Celsius, Fahrenheit }
 
 class _ChangeUnitBodyState extends State<ChangeUnitBody> {
-
   Units? unit;
 
-  Future <void> setUnit () async {
+  Future<void> setUnit() async {
     SharedPreferences preferences = await SharedPreferences.getInstance();
-    if (preferences.getString('Unit') != null) {
-      if (preferences.getString('Unit') == 'Celsius') {
+    if (preferences.getString('unit') != null) {
+      if (preferences.getString('unit') == 'Celsius') {
         setState(() {
           unit = Units.Celsius;
         });
-      }
-      else if (preferences.getString('Unit') == 'Fahrenheit') {
+      } else if (preferences.getString('unit') == 'Fahrenheit') {
         setState(() {
           unit = Units.Fahrenheit;
         });
       }
-    }
-    else {
-      preferences.setString('Unit', 'Celsius');
+    } else {
+      preferences.setString('unit', 'Celsius');
       setState(() {
         unit = Units.Celsius;
       });
@@ -91,26 +87,34 @@ class _ChangeUnitBodyState extends State<ChangeUnitBody> {
               child: Text(
                 'Save',
                 style: TextStyle(
-                  color: Data.secondaryColor,
+                  color: Constants.secondaryColor,
                   fontWeight: FontWeight.bold,
                 ),
               ),
               style: ButtonStyle(
-                backgroundColor: MaterialStateProperty.all(Data.primaryColor),
+                backgroundColor:
+                    MaterialStateProperty.all(Constants.primaryColor),
               ),
               onPressed: () async {
                 SharedPreferences prefs = await SharedPreferences.getInstance();
                 if (unit == Units.Celsius) {
-                  prefs.setString('Unit', 'Celsius');
-                  Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (BuildContext context) {
-                    return MapScreen();
-                  },), (route) => false);
-                }
-                else {
-                  prefs.setString('Unit', 'Fahrenheit');
-                  Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (BuildContext context) {
-                    return MapScreen();
-                  },), (route) => false);
+                  prefs.setString('unit', 'Celsius');
+                  Navigator.pushAndRemoveUntil(context, MaterialPageRoute(
+                    builder: (BuildContext context) {
+                      return MapScreen();
+                    },
+                  ), (route) => false);
+                } else {
+                  prefs.setString('unit', 'Fahrenheit');
+                  Navigator.pushAndRemoveUntil(
+                    context,
+                    MaterialPageRoute(
+                      builder: (BuildContext context) {
+                        return MapScreen();
+                      },
+                    ),
+                    (route) => false,
+                  );
                 }
               },
             ),

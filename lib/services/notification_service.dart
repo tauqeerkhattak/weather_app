@@ -33,7 +33,7 @@ class NotificationService {
     const AndroidNotificationDetails android = AndroidNotificationDetails(
       '12356',
       'My notification',
-      'This is a notification',
+      channelDescription: 'This is a notification',
       importance: Importance.max,
       priority: Priority.high,
       showWhen: true,
@@ -44,11 +44,11 @@ class NotificationService {
     );
 
     await notifications.periodicallyShow(
-        12345,
-        'Is it sunny outside?',
-        'Check out today\'s weather!',
-        RepeatInterval.daily,
-        notificationDetails,
+      12345,
+      'Is it sunny outside?',
+      'Check out today\'s weather!',
+      RepeatInterval.daily,
+      notificationDetails,
     );
   }
 

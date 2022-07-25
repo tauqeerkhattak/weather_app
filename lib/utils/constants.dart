@@ -1,32 +1,34 @@
 import 'dart:convert';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
-import 'package:flutter/services.dart';
-import 'package:http/http.dart' as http;
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_weather_bg_null_safety/utils/weather_type.dart';
+import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class Data {
+class Constants {
   static Color primaryColor = Colors.teal;
   static Color secondaryColor = Colors.white;
   static Color temperatureColor = Colors.black;
   static Color forecastBackgroundColor = Colors.transparent.withOpacity(0.1);
 
-  static Future<dynamic> getWeatherData({required double lat,required double long}) async {
+  static Future<dynamic> getWeatherData(
+      {required double lat, required double long}) async {
     final response = await http.get(
-      Uri.parse('https://api.openweathermap.org/data/2.5/onecall?lat=$lat&lon=$long&units=metric&exclude=minutely,hourly&appid=1aca8b01724808e81031434cd1341c65'),
+      Uri.parse(
+          'https://api.openweathermap.org/data/2.5/onecall?lat=$lat&lon=$long&units=metric&exclude=minutely,hourly&appid=1aca8b01724808e81031434cd1341c65'),
     );
     if (response.statusCode == 200) {
       return await jsonDecode(response.body);
-    }
-    else {
+    } else {
       return response.statusCode;
     }
   }
 
-  static WeatherType getWeatherType (String weatherCode) {
+  static WeatherType getWeatherType(String weatherCode) {
     switch (weatherCode) {
       case '01d':
         return WeatherType.sunny;
@@ -69,38 +71,35 @@ class Data {
     }
   }
 
-  static Future <String> getUnit (String stringTemp) async {
+  static Future<String> getUnit(String stringTemp) async {
     double temperature = double.parse(stringTemp);
     String result = '';
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    if (prefs.getString('Unit') == 'Celsius') {
-      result = Data.roundOff(temperature);
+    if (prefs.getString('unit') == 'Celsius') {
+      result = Constants.roundOff(temperature);
       return result;
-    }
-    else {
-      double temp = (temperature * 9/5) + 32;
-      result = Data.roundOff(temp);
+    } else {
+      double temp = (temperature * 9 / 5) + 32;
+      result = Constants.roundOff(temp);
       return result;
     }
   }
 
-  static String roundOff (double temperature) {
+  static String roundOff(double temperature) {
     String temp = temperature.toString();
     String stringDecimalPart = temp.split('.')[1];
-    double doubleDecimalPart = double.parse('0.'+stringDecimalPart);
+    double doubleDecimalPart = double.parse('0.' + stringDecimalPart);
     print(temperature);
     print(doubleDecimalPart);
     if (doubleDecimalPart >= 0.4 && doubleDecimalPart <= 0.6) {
       return temperature.toStringAsFixed(1);
-    }
-    else {
+    } else {
       double i = 1 - doubleDecimalPart;
       if (i > 0.6) {
         temperature = temperature - doubleDecimalPart;
         int intTemperature = temperature.floor();
         return '$intTemperature';
-      }
-      else {
+      } else {
         temperature = temperature + i;
         int intTemperature = temperature.floor();
         return '$intTemperature';
@@ -108,21 +107,21 @@ class Data {
     }
   }
 
-  static String epochToDay (int epoch) {
+  static String epochToDay(int epoch) {
     DateTime date = DateTime.fromMillisecondsSinceEpoch(epoch * 1000);
     DateFormat format = DateFormat('E');
     var day = format.format(date);
     return day;
   }
 
-  static String epochToDate (int epoch) {
+  static String epochToDate(int epoch) {
     DateTime dateTime = DateTime.fromMillisecondsSinceEpoch(epoch * 1000);
     DateFormat format = DateFormat('MMMd');
     var date = format.format(dateTime);
     return date;
   }
 
-  static String epochToFullDate (int epoch) {
+  static String epochToFullDate(int epoch) {
     DateTime dateTime = DateTime.fromMillisecondsSinceEpoch(epoch * 1000);
     DateFormat format = DateFormat('EEEE, MMMM d, yyyy');
     var date = format.format(dateTime);
@@ -131,8 +130,11 @@ class Data {
 
   static Future<Uint8List> getBytesFromAsset(String path, int width) async {
     ByteData data = await rootBundle.load(path);
-    ui.Codec codec = await ui.instantiateImageCodec(data.buffer.asUint8List(), targetWidth: width);
+    ui.Codec codec = await ui.instantiateImageCodec(data.buffer.asUint8List(),
+        targetWidth: width);
     ui.FrameInfo fi = await codec.getNextFrame();
-    return (await fi.image.toByteData(format: ui.ImageByteFormat.png))!.buffer.asUint8List();
+    return (await fi.image.toByteData(format: ui.ImageByteFormat.png))!
+        .buffer
+        .asUint8List();
   }
 }

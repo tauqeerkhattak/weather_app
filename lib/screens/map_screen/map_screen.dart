@@ -1,38 +1,38 @@
 import 'package:animated_text_kit/animated_text_kit.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
-import 'package:geocode/geocode.dart';
+import 'package:geocoding/geocoding.dart' hide Location;
+import 'package:get/get.dart';
 import 'package:latlong2/latlong.dart' as latLong;
 import 'package:loading_overlay/loading_overlay.dart';
 import 'package:location/location.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:weather_app/About/about.dart';
-import 'package:weather_app/CityWeather/city_weather.dart';
-import 'package:weather_app/Unit/change_unit.dart';
-import 'package:weather_app/data.dart';
+import 'package:weather_app/screens/About/about.dart';
+import 'package:weather_app/screens/Unit/change_unit.dart';
+import 'package:weather_app/screens/city_weather/city_weather.dart';
+import 'package:weather_app/utils/assets.dart';
+import 'package:weather_app/utils/constants.dart';
 
 class MapScreen extends StatelessWidget {
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       drawer: SafeArea(
         child: Container(
-          height: MediaQuery.of(context).size.height,
-          width: MediaQuery.of(context).size.width * 0.70,
-          color: Data.primaryColor,
+          height: Get.height,
+          width: Get.width * 0.70,
+          color: Constants.primaryColor,
           child: ListView(
             children: [
               Container(
-                width: MediaQuery.of(context).size.width * 0.70,
-                height: MediaQuery.of(context).size.height * 0.25,
+                width: Get.width * 0.70,
+                height: Get.height * 0.25,
                 child: Center(
                   child: Text(
                     'Weather App',
                     style: TextStyle(
-                      color: Data.secondaryColor,
+                      color: Constants.secondaryColor,
                       fontSize: 30,
                       letterSpacing: 3.5,
                       fontWeight: FontWeight.bold,
@@ -46,7 +46,7 @@ class MapScreen extends StatelessWidget {
                   right: 25,
                 ),
                 child: Divider(
-                  color: Data.secondaryColor,
+                  color: Constants.secondaryColor,
                   thickness: 1.5,
                 ),
               ),
@@ -56,10 +56,7 @@ class MapScreen extends StatelessWidget {
                 ),
                 child: InkWell(
                   onTap: () {
-                    Navigator.push(context,
-                        MaterialPageRoute(builder: (context) {
-                      return ChangeUnit();
-                    }));
+                    Get.to(() => ChangeUnit());
                   },
                   child: Row(
                     children: [
@@ -68,7 +65,7 @@ class MapScreen extends StatelessWidget {
                         child: Center(
                           child: Icon(
                             Icons.settings,
-                            color: Data.secondaryColor,
+                            color: Constants.secondaryColor,
                           ),
                         ),
                       ),
@@ -76,9 +73,9 @@ class MapScreen extends StatelessWidget {
                         flex: 8,
                         child: Center(
                           child: Text(
-                            'Temperature Unit',
+                            'Temperature unit',
                             style: TextStyle(
-                              color: Data.secondaryColor,
+                              color: Constants.secondaryColor,
                               fontSize: 20,
                               fontWeight: FontWeight.bold,
                             ),
@@ -95,14 +92,7 @@ class MapScreen extends StatelessWidget {
                 ),
                 child: InkWell(
                   onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (BuildContext context) {
-                          return About();
-                        }
-                      ),
-                    );
+                    Get.to(() => About());
                   },
                   child: Row(
                     children: [
@@ -111,7 +101,7 @@ class MapScreen extends StatelessWidget {
                         child: Center(
                           child: Icon(
                             Icons.info_outline,
-                            color: Data.secondaryColor,
+                            color: Constants.secondaryColor,
                           ),
                         ),
                       ),
@@ -119,9 +109,9 @@ class MapScreen extends StatelessWidget {
                         flex: 8,
                         child: Center(
                           child: Text(
-                            'About App',
+                            'about App',
                             style: TextStyle(
-                              color: Data.secondaryColor,
+                              color: Constants.secondaryColor,
                               fontSize: 20,
                               fontWeight: FontWeight.bold,
                             ),
@@ -149,7 +139,6 @@ class MapScreenBody extends StatefulWidget {
 }
 
 class _MapScreenBodyState extends State<MapScreenBody> {
-
   bool isLoading = false;
   List<Marker> markers = [];
   static final double markerHeight = 50;
@@ -160,9 +149,8 @@ class _MapScreenBodyState extends State<MapScreenBody> {
   bool isLocationSaved = false;
 
   Future<String> getCityName(double lat, double long) async {
-    GeoCode geoCode = GeoCode();
-    Address address = await geoCode.reverseGeocoding(latitude: lat, longitude: long);
-    return address.city.toString();
+    final placemarks = await placemarkFromCoordinates(lat, long);
+    return placemarks.first.name ?? 'Not found';
   }
 
   Future<void> getSavedLocation() async {
@@ -171,12 +159,12 @@ class _MapScreenBodyState extends State<MapScreenBody> {
       double lat = double.parse(preferences.getString('Latitude').toString());
       double long = double.parse(preferences.getString('Longitude').toString());
       String tempCityName = await getCityName(lat, long);
-      var json = await Data.getWeatherData(lat: lat, long: long);
+      var json = await Constants.getWeatherData(lat: lat, long: long);
       setState(() {
         cityName = tempCityName;
         cityWeatherType = json['current']['weather'][0]['main'];
-        Data.getUnit(
-                Data.roundOff(double.parse(json['current']['temp'].toString())))
+        Constants.getUnit(Constants.roundOff(
+                double.parse(json['current']['temp'].toString())))
             .then((value) {
           cityTemp = value;
         });
@@ -204,10 +192,10 @@ class _MapScreenBodyState extends State<MapScreenBody> {
       width: MediaQuery.of(context).size.width,
       child: LoadingOverlay(
         isLoading: isLoading,
-        color: Data.primaryColor,
+        color: Constants.primaryColor,
         progressIndicator: Container(
           child: Center(
-            child: Image.asset('images/loading.gif'),
+            child: Image.asset(Assets.loading),
           ),
         ),
         child: Stack(
@@ -223,11 +211,11 @@ class _MapScreenBodyState extends State<MapScreenBody> {
                 zoom: 6.5,
               ),
               layers: [
-                TileLayerOptions(
-                  urlTemplate:
-                      'https://c.tiles.wmflabs.org/osm-no-labels/{z}/{x}/{y}.png',
-                  subdomains: ['a', 'b', 'c'],
-                ),
+                // TileLayerOptions(
+                //   urlTemplate:
+                //       'https://c.tiles.wmflabs.org/osm-no-labels/{z}/{x}/{y}.png',
+                //   subdomains: ['a', 'b', 'c'],
+                // ),
                 MarkerLayerOptions(
                   markers: markers,
                 ),
@@ -248,15 +236,17 @@ class _MapScreenBodyState extends State<MapScreenBody> {
                             ? cityName + '   $cityTemp\u00b0'
                             : '',
                         textStyle: TextStyle(
-                          color: Data.primaryColor,
+                          color: Constants.primaryColor,
                           fontWeight: FontWeight.bold,
                           fontSize: 25,
                         ),
                       ),
                       FadeAnimatedText(
-                        (isLocationSaved)?'Click Here for Location weather':'',
+                        (isLocationSaved)
+                            ? 'Click Here for Location weather'
+                            : '',
                         textStyle: TextStyle(
-                          color: Data.primaryColor,
+                          color: Constants.primaryColor,
                           fontWeight: FontWeight.bold,
                           fontSize: 20,
                         ),
@@ -271,7 +261,7 @@ class _MapScreenBodyState extends State<MapScreenBody> {
                         LocationData _locationData;
                         Location _location = new Location();
                         SharedPreferences storage =
-                        await SharedPreferences.getInstance();
+                            await SharedPreferences.getInstance();
                         if (await _location.serviceEnabled()) {
                           _locationData = await _location.getLocation();
                           String latitude = _locationData.latitude.toString();
@@ -282,19 +272,23 @@ class _MapScreenBodyState extends State<MapScreenBody> {
                               'Longitude', _locationData.longitude.toString());
                           String locationName = await getCityName(
                               double.parse(latitude), double.parse(longitude));
-                          Data.getWeatherData(
-                              lat: double.parse(latitude),
-                              long: double.parse(longitude))
+                          Constants.getWeatherData(
+                                  lat: double.parse(latitude),
+                                  long: double.parse(longitude))
                               .then((value) {
-                            Navigator.push(context, MaterialPageRoute(
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
                                 builder: (BuildContext context) {
                                   return CityWeather(
                                     cityName: locationName,
                                     weatherJSON: value,
                                   );
-                                })).then((newValue) async {
-                              String temp = await Data.getUnit(Data.roundOff(
-                                  double.parse(
+                                },
+                              ),
+                            ).then((newValue) async {
+                              String temp = await Constants.getUnit(
+                                  Constants.roundOff(double.parse(
                                       value['current']['temp'].toString())));
                               setState(() {
                                 cityName = locationName;
@@ -316,7 +310,7 @@ class _MapScreenBodyState extends State<MapScreenBody> {
                                 title: Text(
                                   'Location access!',
                                   style: TextStyle(
-                                    color: Data.primaryColor,
+                                    color: Constants.primaryColor,
                                   ),
                                 ),
                                 content: Text(
@@ -330,7 +324,7 @@ class _MapScreenBodyState extends State<MapScreenBody> {
                                     child: Text(
                                       'Okay',
                                       style: TextStyle(
-                                        color: Data.primaryColor,
+                                        color: Constants.primaryColor,
                                       ),
                                     ),
                                   ),
@@ -350,7 +344,7 @@ class _MapScreenBodyState extends State<MapScreenBody> {
                               title: Text(
                                 'Permission Denied!',
                                 style: TextStyle(
-                                  color: Data.primaryColor,
+                                  color: Constants.primaryColor,
                                 ),
                               ),
                               content: Text(
@@ -363,7 +357,7 @@ class _MapScreenBodyState extends State<MapScreenBody> {
                                   child: Text(
                                     'Okay',
                                     style: TextStyle(
-                                      color: Data.primaryColor,
+                                      color: Constants.primaryColor,
                                     ),
                                   ),
                                 ),
@@ -379,7 +373,7 @@ class _MapScreenBodyState extends State<MapScreenBody> {
                   leading: IconButton(
                     icon: Icon(
                       Icons.dehaze,
-                      color: Data.primaryColor,
+                      color: Constants.primaryColor,
                     ),
                     onPressed: () {
                       Scaffold.of(context).openDrawer();
@@ -400,7 +394,7 @@ class _MapScreenBodyState extends State<MapScreenBody> {
                     Icons.location_on,
                     color: Colors.white,
                   ),
-                  backgroundColor: Data.primaryColor,
+                  backgroundColor: Constants.primaryColor,
                   onPressed: () async {
                     var status = await Permission.location.request();
                     if (status.isGranted) {
@@ -421,7 +415,7 @@ class _MapScreenBodyState extends State<MapScreenBody> {
                             'Longitude', _locationData.longitude.toString());
                         String locationName = await getCityName(
                             double.parse(latitude), double.parse(longitude));
-                        Data.getWeatherData(
+                        Constants.getWeatherData(
                                 lat: double.parse(latitude),
                                 long: double.parse(longitude))
                             .then((value) {
@@ -435,7 +429,9 @@ class _MapScreenBodyState extends State<MapScreenBody> {
                             setState(() {
                               isLocationSaved = true;
                               cityName = locationName;
-                              Data.getUnit(Data.roundOff(double.parse(value['current']['temp'].toString()))).then((value) {
+                              Constants.getUnit(Constants.roundOff(double.parse(
+                                      value['current']['temp'].toString())))
+                                  .then((value) {
                                 setState(() {
                                   cityTemp = value;
                                 });
@@ -457,7 +453,7 @@ class _MapScreenBodyState extends State<MapScreenBody> {
                               title: Text(
                                 'Location access!',
                                 style: TextStyle(
-                                  color: Data.primaryColor,
+                                  color: Constants.primaryColor,
                                 ),
                               ),
                               content: Text(
@@ -471,7 +467,7 @@ class _MapScreenBodyState extends State<MapScreenBody> {
                                   child: Text(
                                     'Okay',
                                     style: TextStyle(
-                                      color: Data.primaryColor,
+                                      color: Constants.primaryColor,
                                     ),
                                   ),
                                 ),
@@ -491,7 +487,7 @@ class _MapScreenBodyState extends State<MapScreenBody> {
                             title: Text(
                               'Permission Denied!',
                               style: TextStyle(
-                                color: Data.primaryColor,
+                                color: Constants.primaryColor,
                               ),
                             ),
                             content: Text(
@@ -504,7 +500,7 @@ class _MapScreenBodyState extends State<MapScreenBody> {
                                 child: Text(
                                   'Okay',
                                   style: TextStyle(
-                                    color: Data.primaryColor,
+                                    color: Constants.primaryColor,
                                   ),
                                 ),
                               ),
@@ -534,21 +530,15 @@ class _MapScreenBodyState extends State<MapScreenBody> {
               setState(() {
                 isLoading = true;
               });
-              Data.getWeatherData(
-                      lat: 24.8815, long:  67.0139)
+              Constants.getWeatherData(lat: 24.8815, long: 67.0139)
                   .then((value) {
                 setState(() {
                   isLoading = false;
                 });
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (BuildContext context) {
-                    return CityWeather(
+                Get.to(() => CityWeather(
                       cityName: 'Karachi',
                       weatherJSON: value,
-                    );
-                  }),
-                );
+                    ));
               });
             },
             child: Container(
@@ -556,7 +546,7 @@ class _MapScreenBodyState extends State<MapScreenBody> {
                 bottom: 10,
               ),
               child: Image.asset(
-                'images/karachi.png',
+                Assets.karachi,
               ),
             ),
           );
@@ -572,7 +562,7 @@ class _MapScreenBodyState extends State<MapScreenBody> {
               setState(() {
                 isLoading = true;
               });
-              Data.getWeatherData(
+              Constants.getWeatherData(
                 lat: 34.1448298,
                 long: 73.2142212,
               ).then((value) {
@@ -595,7 +585,7 @@ class _MapScreenBodyState extends State<MapScreenBody> {
                 bottom: 10,
               ),
               child: Image.asset(
-                'images/abbottabad.png',
+                Assets.abbottabad,
               ),
             ),
           );
@@ -611,7 +601,7 @@ class _MapScreenBodyState extends State<MapScreenBody> {
               setState(() {
                 isLoading = true;
               });
-              Data.getWeatherData(
+              Constants.getWeatherData(
                 lat: 25.3801017,
                 long: 68.3750376,
               ).then((value) {
@@ -634,7 +624,7 @@ class _MapScreenBodyState extends State<MapScreenBody> {
                 bottom: 10,
               ),
               child: Image.asset(
-                'images/hyderabad.png',
+                Assets.hyderabad,
               ),
             ),
           );
@@ -650,7 +640,7 @@ class _MapScreenBodyState extends State<MapScreenBody> {
               setState(() {
                 isLoading = true;
               });
-              Data.getWeatherData(
+              Constants.getWeatherData(
                 lat: 31.422829353929913,
                 long: 73.0927324843212,
               ).then((value) {
@@ -673,7 +663,7 @@ class _MapScreenBodyState extends State<MapScreenBody> {
                 bottom: 10,
               ),
               child: Image.asset(
-                'images/faisalabad.png',
+                Assets.faisalabad,
               ),
             ),
           );
@@ -689,7 +679,7 @@ class _MapScreenBodyState extends State<MapScreenBody> {
               setState(() {
                 isLoading = true;
               });
-              Data.getWeatherData(
+              Constants.getWeatherData(
                       lat: 32.16018036171697, long: 74.18934124099547)
                   .then((value) {
                 setState(() {
@@ -711,7 +701,7 @@ class _MapScreenBodyState extends State<MapScreenBody> {
                 bottom: 10,
               ),
               child: Image.asset(
-                'images/gujranwala.png',
+                Assets.gujranwala,
               ),
             ),
           );
@@ -727,7 +717,7 @@ class _MapScreenBodyState extends State<MapScreenBody> {
               setState(() {
                 isLoading = true;
               });
-              Data.getWeatherData(
+              Constants.getWeatherData(
                       lat: 25.24720087407281, long: 62.283503450529786)
                   .then((value) {
                 setState(() {
@@ -749,7 +739,7 @@ class _MapScreenBodyState extends State<MapScreenBody> {
                 bottom: 10,
               ),
               child: Image.asset(
-                'images/gwadar.png',
+                Assets.gwadar,
               ),
             ),
           );
@@ -765,7 +755,7 @@ class _MapScreenBodyState extends State<MapScreenBody> {
               setState(() {
                 isLoading = true;
               });
-              Data.getWeatherData(
+              Constants.getWeatherData(
                       lat: 33.694807560471546, long: 73.04061223025087)
                   .then((value) {
                 setState(() {
@@ -787,7 +777,7 @@ class _MapScreenBodyState extends State<MapScreenBody> {
                 bottom: 10,
               ),
               child: Image.asset(
-                'images/islamabad.png',
+                Assets.islamabad,
               ),
             ),
           );
@@ -803,7 +793,7 @@ class _MapScreenBodyState extends State<MapScreenBody> {
               setState(() {
                 isLoading = true;
               });
-              Data.getWeatherData(
+              Constants.getWeatherData(
                       lat: 27.815109510613535, long: 66.60757835899655)
                   .then((value) {
                 setState(() {
@@ -825,7 +815,7 @@ class _MapScreenBodyState extends State<MapScreenBody> {
                 bottom: 10,
               ),
               child: Image.asset(
-                'images/khuzdar.png',
+                Assets.islamabad,
               ),
             ),
           );
@@ -841,7 +831,7 @@ class _MapScreenBodyState extends State<MapScreenBody> {
               setState(() {
                 isLoading = true;
               });
-              Data.getWeatherData(
+              Constants.getWeatherData(
                       lat: 33.58573468018176, long: 71.44454148778277)
                   .then((value) {
                 setState(() {
@@ -863,7 +853,7 @@ class _MapScreenBodyState extends State<MapScreenBody> {
                 bottom: 10,
               ),
               child: Image.asset(
-                'images/kohat.png',
+                Assets.kohat,
               ),
             ),
           );
@@ -879,7 +869,7 @@ class _MapScreenBodyState extends State<MapScreenBody> {
               setState(() {
                 isLoading = true;
               });
-              Data.getWeatherData(
+              Constants.getWeatherData(
                       lat: 31.519766435958818, long: 74.3551141291356)
                   .then((value) {
                 setState(() {
@@ -901,7 +891,7 @@ class _MapScreenBodyState extends State<MapScreenBody> {
                 bottom: 10,
               ),
               child: Image.asset(
-                'images/lahore.png',
+                Assets.lahore,
               ),
             ),
           );
@@ -917,7 +907,7 @@ class _MapScreenBodyState extends State<MapScreenBody> {
               setState(() {
                 isLoading = true;
               });
-              Data.getWeatherData(
+              Constants.getWeatherData(
                       lat: 34.19468490569706, long: 72.02515586593198)
                   .then((value) {
                 setState(() {
@@ -939,7 +929,7 @@ class _MapScreenBodyState extends State<MapScreenBody> {
                 bottom: 10,
               ),
               child: Image.asset(
-                'images/mardan.png',
+                Assets.mardan,
               ),
             ),
           );
@@ -955,7 +945,7 @@ class _MapScreenBodyState extends State<MapScreenBody> {
               setState(() {
                 isLoading = true;
               });
-              Data.getWeatherData(
+              Constants.getWeatherData(
                       lat: 30.188218598916613, long: 71.48565676532485)
                   .then((value) {
                 setState(() {
@@ -977,7 +967,7 @@ class _MapScreenBodyState extends State<MapScreenBody> {
                 bottom: 10,
               ),
               child: Image.asset(
-                'images/multan.png',
+                Assets.multan,
               ),
             ),
           );
@@ -993,7 +983,7 @@ class _MapScreenBodyState extends State<MapScreenBody> {
               setState(() {
                 isLoading = true;
               });
-              Data.getWeatherData(
+              Constants.getWeatherData(
                       lat: 34.013620839754324, long: 71.5201842585791)
                   .then((value) {
                 setState(() {
@@ -1015,7 +1005,7 @@ class _MapScreenBodyState extends State<MapScreenBody> {
                 bottom: 10,
               ),
               child: Image.asset(
-                'images/peshawar.png',
+                Assets.peshawar,
               ),
             ),
           );
@@ -1031,7 +1021,7 @@ class _MapScreenBodyState extends State<MapScreenBody> {
               setState(() {
                 isLoading = true;
               });
-              Data.getWeatherData(
+              Constants.getWeatherData(
                       lat: 30.18031408530992, long: 66.9747351561208)
                   .then((value) {
                 setState(() {
@@ -1053,7 +1043,7 @@ class _MapScreenBodyState extends State<MapScreenBody> {
                 bottom: 10,
               ),
               child: Image.asset(
-                'images/quetta.png',
+                Assets.quetta,
               ),
             ),
           );
@@ -1069,7 +1059,7 @@ class _MapScreenBodyState extends State<MapScreenBody> {
               setState(() {
                 isLoading = true;
               });
-              Data.getWeatherData(
+              Constants.getWeatherData(
                       lat: 26.04356493250303, long: 68.94760021146035)
                   .then((value) {
                 setState(() {
@@ -1091,7 +1081,7 @@ class _MapScreenBodyState extends State<MapScreenBody> {
                 bottom: 10,
               ),
               child: Image.asset(
-                'images/sanghar.png',
+                Assets.sanghar,
               ),
             ),
           );
@@ -1107,7 +1097,7 @@ class _MapScreenBodyState extends State<MapScreenBody> {
               setState(() {
                 isLoading = true;
               });
-              Data.getWeatherData(
+              Constants.getWeatherData(
                       lat: 27.723530595905487, long: 68.82266843352353)
                   .then((value) {
                 setState(() {
@@ -1129,7 +1119,7 @@ class _MapScreenBodyState extends State<MapScreenBody> {
                 bottom: 10,
               ),
               child: Image.asset(
-                'images/sukkur.png',
+                Assets.sukkur,
               ),
             ),
           );
@@ -1145,7 +1135,7 @@ class _MapScreenBodyState extends State<MapScreenBody> {
               setState(() {
                 isLoading = true;
               });
-              Data.getWeatherData(
+              Constants.getWeatherData(
                       lat: 26.008317285055867, long: 63.03759333886163)
                   .then((value) {
                 setState(() {
@@ -1167,7 +1157,7 @@ class _MapScreenBodyState extends State<MapScreenBody> {
                 bottom: 10,
               ),
               child: Image.asset(
-                'images/turbat.png',
+                Assets.turbat,
               ),
             ),
           );
