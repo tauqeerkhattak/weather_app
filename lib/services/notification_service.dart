@@ -43,11 +43,10 @@ class NotificationService {
       android: android,
     );
 
-    await notifications.periodicallyShow(
-      12345,
-      'Is it sunny outside?',
-      'Check out today\'s weather!',
-      RepeatInterval.daily,
+    await notifications.show(
+      1234,
+      'Hi',
+      'Hello',
       notificationDetails,
     );
   }

@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_weather_bg_null_safety/utils/weather_type.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
+import 'package:latlong2/latlong.dart' as latLong;
 import 'package:shared_preferences/shared_preferences.dart';
 
 class Constants {
@@ -14,6 +15,19 @@ class Constants {
   static Color secondaryColor = Colors.white;
   static Color temperatureColor = Colors.black;
   static Color forecastBackgroundColor = Colors.transparent.withOpacity(0.1);
+
+  static latLong.LatLng northEastBound = latLong.LatLng(
+    35.82102525343907,
+    80.08616797277499,
+  );
+  static latLong.LatLng southWestBount = latLong.LatLng(
+    25.262804710618266,
+    61.69346830399224,
+  );
+  static latLong.LatLng center = latLong.LatLng(
+    29.98743291600722,
+    69.18838056609695,
+  );
 
   static Future<dynamic> getWeatherData(
       {required double lat, required double long}) async {
